@@ -48,7 +48,21 @@ Langkah ini cukup dilakukan sekali.
 
 > **Client ID & secret cukup dibuat sekali.** Itu identitas *aplikasi* CGDrive, bukan identitas akun Gmail. Satu pasang dipakai untuk semua akun: setiap akun cukup login lewat tombol **Hubungkan akun Google**. Satu-satunya hal per akun adalah menambahkan email-nya sebagai *Test user* (langkah 3).
 
-## Menjalankan
+## Unduh binary siap pakai
+
+CGDrive dikemas sebagai **satu file program** dan halaman web-nya sudah tertanam di dalamnya, jadi tidak perlu meng-install apa pun.
+
+1. Unduh file untuk sistem operasimu dari halaman [Releases](https://github.com/haloabdur/cgdrive/releases) (atau dari artifact workflow **Release** di tab *Actions*):
+   - Windows: `cgdrive-x86_64-pc-windows-msvc.zip`
+   - macOS Apple Silicon: `cgdrive-aarch64-apple-darwin.tar.gz`
+   - macOS Intel: `cgdrive-x86_64-apple-darwin.tar.gz`
+   - Linux (statis, semua distro): `cgdrive-x86_64-unknown-linux-musl.tar.gz`
+2. Ekstrak, salin `.env.example` menjadi `.env` di folder yang sama, lalu isi Client ID & secret.
+3. Jalankan `cgdrive` (Windows: `cgdrive.exe`) dan buka http://localhost:8080.
+
+Membuat rilis baru: `git tag v0.1.0 && git push origin v0.1.0`. Workflow akan mem-build keempat binary dan melampirkannya ke GitHub Release.
+
+## Menjalankan dari source
 
 Butuh [Rust](https://rustup.rs/) 1.85 atau lebih baru.
 
