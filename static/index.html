@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CGDrive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #F7F8FA; --surface: #FFFFFF; --border: #E5E7EB; --border-soft: #F1F5F9;
+    --text: #111827; --text-2: #374151; --muted: #4B5563;
+    --accent: #2563EB; --accent-strong: #1D4ED8; --accent-soft: #DBEAFE; --accent-wash: #F5F9FF; --accent-line: #BFDBFE;
+    --ok: #16A34A; --ok-text: #15803D; --danger: #DC2626; --danger-text: #B91C1C;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0B0F17; --surface: #121826; --border: #1F2937; --border-soft: #182030;
+      --text: #F3F4F6; --text-2: #D1D5DB; --muted: #9CA3AF;
+      --accent: #3B82F6; --accent-strong: #60A5FA; --accent-soft: #1E3A8A; --accent-wash: #0F1A30; --accent-line: #1E40AF;
+      --ok: #22C55E; --ok-text: #4ADE80; --danger: #EF4444; --danger-text: #F87171;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 Inter, system-ui, -apple-system, sans-serif; }
+  button { font: inherit; color: inherit; }
+  a { color: var(--accent); }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  header { height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    background: var(--surface); border-bottom: 1px solid var(--border); }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  .logo { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
+  .summary { color: var(--muted); }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 32px 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  aside { flex: 1 1 300px; max-width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  section.work { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  h2 { margin: 0; font-size: 15px; font-weight: 600; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+
+  .account { position: relative; display: flex; align-items: center; gap: 12px; padding: 14px; width: 100%; text-align: left;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;
+    transition: border-color .15s, box-shadow .15s; }
+  .account:hover { border-color: var(--accent-line); }
+  .account[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .account:disabled { cursor: default; }
+  .avatar { width: 40px; height: 40px; border-radius: 999px; flex-shrink: 0; display: grid; place-items: center;
+    color: #fff; font-weight: 600; background: var(--accent); object-fit: cover; }
+  .acc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .acc-email { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; }
+  .bar > span { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width .2s; }
+  .bar.thin { height: 4px; }
+  .bar.full > span { background: var(--danger); }
+  .bar.done > span { background: var(--ok); }
+  .icon-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; color: var(--muted);
+    display: grid; place-items: center; cursor: pointer; flex-shrink: 0; }
+  .icon-btn:hover { background: var(--border-soft); color: var(--danger-text); }
+  .acc-wrap { display: flex; align-items: center; gap: 4px; }
+  .acc-wrap .account { flex: 1; min-width: 0; }
+
+  .connect { min-height: 48px; border: 1.5px dashed var(--border); border-radius: var(--radius); color: var(--text-2);
+    font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+  .connect:hover { border-color: var(--accent); color: var(--accent); }
+  .auto { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; }
+  .auto input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+  .auto span { display: flex; flex-direction: column; gap: 2px; }
+  .empty { padding: 20px; text-align: center; color: var(--muted); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+
+  .upload-card { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .drop { border: 2px dashed var(--accent-line); background: var(--accent-wash); border-radius: var(--radius);
+    padding: 48px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; transition: background .15s, border-color .15s; }
+  .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop.disabled { opacity: .55; }
+  .drop-icon { width: 56px; height: 56px; border-radius: 999px; background: var(--accent-soft); display: grid; place-items: center; }
+  .drop p { margin: 0; }
+  .drop .title { font-size: 17px; font-weight: 600; }
+  .drop .sub { color: var(--muted); }
+  .btn { min-height: 44px; padding: 0 20px; border: none; border-radius: 10px; background: var(--accent); color: #fff;
+    font-weight: 600; cursor: pointer; }
+  .btn:hover { background: var(--accent-strong); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .target { color: var(--text-2); flex-wrap: wrap; }
+  .target strong { color: var(--text); }
+
+  .queue { padding: 8px 0; }
+  .queue-head { padding: 12px 20px; }
+  .item { padding: 12px 20px; border-top: 1px solid var(--border-soft); display: flex; align-items: center; gap: 14px; }
+  .ext { width: 36px; height: 36px; border-radius: 8px; background: var(--border-soft); color: var(--text-2); font-size: 11px;
+    font-weight: 700; display: grid; place-items: center; flex-shrink: 0; text-transform: uppercase; }
+  .item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .item-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .status { font-size: 12px; font-weight: 600; flex-shrink: 0; color: var(--accent-strong); }
+  .status.ok { color: var(--ok-text); } .status.err { color: var(--danger-text); } .status.wait { color: var(--muted); }
+  .meta { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .queue-empty { padding: 20px; border-top: 1px solid var(--border-soft); color: var(--muted); text-align: center; }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); max-width: calc(100% - 32px);
+    padding: 12px 16px; border-radius: 10px; background: var(--text); color: var(--bg); font-weight: 500;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .toast.show { opacity: 1; }
+  .toast.err { background: var(--danger); color: #fff; }
+
+  @media (max-width: 640px) {
+    header { padding: 0 16px; }
+    main { padding: 20px 16px; }
+    .drop { padding: 32px 16px; }
+    .summary { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+    </div>
+    CGDrive
+  </div>
+  <span class="summary" id="summary">Memuat akun…</span>
+</header>
+
+<main>
+  <aside aria-labelledby="acc-title">
+    <div class="row">
+      <h2 id="acc-title">Akun Google Drive</h2>
+      <span class="hint">Pilih tujuan</span>
+    </div>
+    <div id="accounts" style="display:flex;flex-direction:column;gap:12px"></div>
+    <a class="connect" href="/auth/google">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Hubungkan akun Google
+    </a>
+    <label class="auto">
+      <input type="checkbox" id="auto" checked>
+      <span>
+        <span style="font-weight:500">Otomatis pilih ruang terbanyak</span>
+        <span class="hint">File dikirim ke akun dengan sisa kapasitas terbesar</span>
+      </span>
+    </label>
+  </aside>
+
+  <section class="work">
+    <div class="card upload-card">
+      <div class="drop" id="drop">
+        <div class="drop-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8a4 4 0 0 1 0 8h-1"/><path d="M12 12v9"/><path d="M8.5 15.5L12 12l3.5 3.5"/></svg>
+        </div>
+        <p class="title">Tarik &amp; lepas file di sini</p>
+        <p class="sub">Semua jenis file · di-stream langsung ke Google Drive</p>
+        <button class="btn" type="button" id="pick">Pilih file</button>
+        <input type="file" id="file" multiple class="sr-only" tabindex="-1" aria-hidden="true">
+      </div>
+      <div class="row target">
+        <span>Tujuan: <strong id="target">—</strong></span>
+        <span class="hint">Folder: /CGDrive</span>
+      </div>
+    </div>
+
+    <div class="card queue">
+      <div class="row queue-head">
+        <h2>Antrian upload</h2>
+        <span class="hint" id="queue-count"></span>
+      </div>
+      <div id="queue"><div class="queue-empty">Belum ada file. File yang kamu upload akan muncul di sini.</div></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const AVATAR_COLORS = ['#2563EB', '#0F766E', '#B45309', '#7C3AED', '#BE185D', '#0369A1'];
+  const CONCURRENCY = 2;
+
+  const $ = (id) => document.getElementById(id);
+  const state = { accounts: [], picked: null, auto: true, queue: [], running: 0 };
+
+  // Bangun elemen DOM tanpa innerHTML agar nama file/email aman.
+  function el(tag, props = {}, children = []) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(props)) {
+      if (k === 'class') node.className = v;
+      else if (k === 'text') node.textContent = v;
+      else if (k.startsWith('on')) node.addEventListener(k.slice(2), v);
+      else if (v !== undefined && v !== null && v !== false) node.setAttribute(k, v === true ? '' : v);
+    }
+    for (const c of [].concat(children)) if (c) node.append(c);
+    return node;
+  }
+  function svg(paths, size = 16) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const s = document.createElementNS(ns, 'svg');
+    s.setAttribute('width', size); s.setAttribute('height', size); s.setAttribute('viewBox', '0 0 24 24');
+    s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2');
+    s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.setAttribute('aria-hidden', 'true');
+    for (const d of paths) { const p = document.createElementNS(ns, 'path'); p.setAttribute('d', d); s.append(p); }
+    return s;
+  }
+
+  function fmtBytes(n) {
+    if (n == null) return '—';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let i = 0;
+    while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+    return n.toLocaleString('id-ID', { maximumFractionDigits: i ? 1 : 0 }) + ' ' + units[i];
+  }
+  const free = (a) => a.error ? -1 : a.limit == null ? Infinity : a.limit - a.usage;
+
+  let toastTimer;
+  function toast(msg, isErr = false) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isErr ? ' err' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => (t.className = 'toast'), 4000);
+  }
+
+  function targetAccount() {
+    const ok = state.accounts.filter((a) => !a.error);
+    if (!ok.length) return null;
+    if (!state.auto && state.picked) return ok.find((a) => a.id === state.picked) || null;
+    return ok.reduce((b, a) => (free(a) > free(b) ? a : b));
+  }
+
+  function renderAccounts() {
+    const box = $('accounts');
+    box.replaceChildren();
+    if (!state.accounts.length) {
+      box.append(el('div', { class: 'empty', text: 'Belum ada akun. Hubungkan akun Google pertamamu.' }));
+    }
+    const target = targetAccount();
+    state.accounts.forEach((a, i) => {
+      const pct = a.limit ? Math.min(100, Math.round((a.usage / a.limit) * 100)) : 0;
+      const usage = a.error ? 'Gagal memuat: ' + a.error
+        : a.limit == null ? fmtBytes(a.usage) + ' terpakai · tanpa batas'
+        : `${fmtBytes(a.usage)} dari ${fmtBytes(a.limit)} · ${pct}%`;
+      const avatar = a.picture
+        ? el('img', { class: 'avatar', src: a.picture, alt: '', referrerpolicy: 'no-referrer' })
+        : el('div', { class: 'avatar', style: `background:${AVATAR_COLORS[i % AVATAR_COLORS.length]}`, text: (a.name || a.email)[0].toUpperCase() });
+      const selected = target && target.id === a.id;
+      const card = el('button', {
+        type: 'button', class: 'account', 'aria-pressed': String(!!selected), disabled: !!a.error,
+        onclick: () => { state.picked = a.id; state.auto = false; $('auto').checked = false; renderAccounts(); },
+      }, [
+        avatar,
+        el('div', { class: 'acc-body' }, [
+          el('span', { class: 'acc-email', text: a.email, title: a.email }),
+          el('div', { class: 'bar' + (pct > 90 ? ' full' : '') }, el('span', { style: `width:${pct}%` })),
+          el('span', { class: 'hint', text: usage }),
+        ]),
+      ]);
+      const remove = el('button', {
+        type: 'button', class: 'icon-btn', 'aria-label': 'Putuskan ' + a.email, title: 'Putuskan akun',
+        onclick: () => disconnect(a),
+      }, svg(['M18 6L6 18', 'M6 6l12 12']));
+      box.append(el('div', { class: 'acc-wrap' }, [card, remove]));
+    });
+
+    const ok = state.accounts.filter((a) => !a.error);
+    const totalFree = ok.reduce((s, a) => s + (a.limit == null ? 0 : Math.max(0, a.limit - a.usage)), 0);
+    $('summary').textContent = state.accounts.length
+      ? `${state.accounts.length} akun · ${fmtBytes(totalFree)} tersisa`
+      : 'Belum ada akun';
+    $('target').textContent = target ? target.email + (state.auto ? ' (otomatis)' : '') : 'hubungkan akun dulu';
+    $('pick').disabled = !target;
+    $('drop').classList.toggle('disabled', !target);
+  }
+
+  async function loadAccounts() {
+    try {
+      const res = await fetch('/api/accounts');
+      state.accounts = await res.json();
+    } catch {
+      toast('Gagal memuat daftar akun', true);
+    }
+    renderAccounts();
+  }
+
+  async function disconnect(a) {
+    if (!confirm(`Putuskan ${a.email} dari CGDrive? File di Drive tidak dihapus.`)) return;
+    const res = await fetch('/api/accounts/' + encodeURIComponent(a.id), { method: 'DELETE' });
+    if (res.ok) {
+      if (state.picked === a.id) { state.picked = null; state.auto = true; $('auto').checked = true; }
+      toast(a.email + ' diputuskan');
+      loadAccounts();
+    } else toast('Gagal memutuskan akun', true);
+  }
+
+  // ---------- Antrian upload ----------
+  function addFiles(files) {
+    const target = targetAccount();
+    if (!target) return toast('Hubungkan akun Google dulu', true);
+    for (const file of files) {
+      state.queue.unshift({ file, status: 'wait', progress: 0, account: state.auto ? 'auto' : target.id });
+    }
+    renderQueue();
+    pump();
+  }
+
+  function pump() {
+    while (state.running < CONCURRENCY) {
+      const job = [...state.queue].reverse().find((j) => j.status === 'wait');
+      if (!job) return;
+      start(job);
+    }
+  }
+
+  function start(job) {
+    job.status = 'up'; job.progress = 0; job.error = null; job.started = performance.now();
+    state.running++;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload?account=' + encodeURIComponent(job.account));
+    xhr.setRequestHeader('X-File-Name', encodeURIComponent(job.file.name));
+    xhr.setRequestHeader('Content-Type', job.file.type || 'application/octet-stream');
+    xhr.upload.onprogress = (e) => {
+      if (!e.lengthComputable) return;
+      job.progress = e.loaded / e.total;
+      job.speed = e.loaded / ((performance.now() - job.started) / 1000);
+      renderQueue();
+    };
+    xhr.onload = () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch {}
+      if (xhr.status >= 200 && xhr.status < 300) {
+        job.status = 'ok'; job.progress = 1; job.result = data;
+      } else {
+        job.status = 'err'; job.error = data.error || `Gagal (${xhr.status})`;
+      }
+      finish();
+    };
+    xhr.onerror = () => { job.status = 'err'; job.error = 'Koneksi terputus'; finish(); };
+    xhr.send(job.file);
+    renderQueue();
+
+    function finish() {
+      state.running--;
+      renderQueue();
+      if (job.status === 'ok') loadAccounts();
+      pump();
+    }
+  }
+
+  function renderQueue() {
+    const box = $('queue');
+    box.replaceChildren();
+    if (!state.queue.length) {
+      box.append(el('div', { class: 'queue-empty', text: 'Belum ada file. File yang kamu upload akan muncul di sini.' }));
+      $('queue-count').textContent = '';
+      return;
+    }
+    const done = state.queue.filter((j) => j.status === 'ok').length;
+    $('queue-count').textContent = `${done} dari ${state.queue.length} selesai`;
+
+    for (const job of state.queue) {
+      const name = job.file.name;
+      const ext = name.includes('.') ? name.split('.').pop().slice(0, 4) : 'FILE';
+      const pct = Math.round(job.progress * 100);
+      let statusText, statusClass, meta;
+      if (job.status === 'ok') {
+        statusText = 'Selesai'; statusClass = 'ok';
+        meta = el('span', { class: 'meta' }, [
+          `${fmtBytes(job.file.size)} · ${job.result.email} · `,
+          job.result.file.webViewLink ? el('a', { href: job.result.file.webViewLink, target: '_blank', rel: 'noopener', text: 'Buka di Drive' }) : null,
+        ]);
+      } else if (job.status === 'err') {
+        statusText = 'Gagal'; statusClass = 'err';
+        meta = el('span', { class: 'meta', title: job.error, text: job.error });
+      } else if (job.status === 'up') {
+        statusText = pct >= 100 ? 'Memproses…' : pct + '%'; statusClass = '';
+        const eta = job.speed ? Math.max(0, (job.file.size * (1 - job.progress)) / job.speed) : null;
+        meta = el('span', { class: 'meta', text: `${fmtBytes(job.file.size)}` + (job.speed ? ` · ${fmtBytes(job.speed)}/s · sisa ${Math.ceil(eta)} dtk` : '') });
+      } else {
+        statusText = 'Menunggu'; statusClass = 'wait';
+        meta = el('span', { class: 'meta', text: fmtBytes(job.file.size) });
+      }
+      const action = job.status === 'err'
+        ? el('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Coba lagi ' + name, title: 'Coba lagi',
+            onclick: () => { job.status = 'wait'; renderQueue(); pump(); } },
+            svg(['M21 12a9 9 0 1 1-3-6.7', 'M21 4v5h-5']))
+        : null;
+      box.append(el('div', { class: 'item' }, [
+        el('div', { class: 'ext', text: ext }),
+        el('div', { class: 'item-body' }, [
+          el('div', { class: 'row' }, [
+            el('span', { class: 'item-name', text: name, title: name }),
+            el('span', { class: 'status ' + statusClass, text: statusText }),
+          ]),
+          el('div', { class: 'bar thin' + (job.status === 'ok' ? ' done' : job.status === 'err' ? ' full' : '') },
+            el('span', { style: `width:${job.status === 'err' ? 100 : pct}%` })),
+          meta,
+        ]),
+        action,
+      ]));
+    }
+  }
+
+  // ---------- Event ----------
+  $('auto').addEventListener('change', (e) => { state.auto = e.target.checked; renderAccounts(); });
+  $('pick').addEventListener('click', () => $('file').click());
+  $('file').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+
+  const drop = $('drop');
+  ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => e.preventDefault());
+  window.addEventListener('beforeunload', (e) => { if (state.running) e.preventDefault(); });
+
+  const params = new URLSearchParams(location.search);
+  if (params.get('connected')) toast(params.get('connected') + ' berhasil terhubung');
+  if (params.get('error')) toast(params.get('error'), true);
+  if (params.toString()) history.replaceState(null, '', '/');
+
+  loadAccounts();
+})();
+</script>
+</body>
+</html>

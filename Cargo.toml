@@ -1,0 +1,18 @@
+[package]
+name = "cgdrive"
+version = "0.1.0"
+edition = "2024"
+description = "Satu halaman untuk upload file ke semua akun Google Drive kamu"
+license = "MIT"
+readme = "README.md"
+
+[dependencies]
+axum = "0.8"
+dotenvy = "0.15.7"
+futures-util = "0.3.34"
+rand = "0.8"
+reqwest = { version = "0.13", default-features = false, features = ["rustls", "json", "stream", "form", "http2", "system-proxy", "query"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+tokio = { version = "1.54.1", features = ["full"] }
+urlencoding = "2.1.3"
