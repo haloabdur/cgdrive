@@ -46,6 +46,8 @@ Langkah ini cukup dilakukan sekali.
 
 > **Catatan:** Untuk aplikasi berstatus *Testing*, Google bisa membuat refresh token kedaluwarsa setelah 7 hari. Jika akun tiba-tiba gagal dimuat, cukup klik **Hubungkan akun Google** lagi dengan akun yang sama. Untuk menghindarinya, ubah status aplikasi ke *In production* di halaman OAuth consent screen (untuk pemakaian pribadi tidak perlu verifikasi selama kamu menerima peringatan "unverified app").
 
+> **Client ID & secret cukup dibuat sekali.** Itu identitas *aplikasi* CGDrive, bukan identitas akun Gmail. Satu pasang dipakai untuk semua akun: setiap akun cukup login lewat tombol **Hubungkan akun Google**. Satu-satunya hal per akun adalah menambahkan email-nya sebagai *Test user* (langkah 3).
+
 ## Menjalankan
 
 Butuh [Rust](https://rustup.rs/) 1.85 atau lebih baru.
@@ -61,6 +63,8 @@ cargo run --release
 ```
 
 Buka **http://localhost:8080**, klik **Hubungkan akun Google**, dan ulangi untuk setiap akun. Setelah itu tinggal tarik & lepas file.
+
+Untuk **memutuskan akun**, klik tombol **✕** di samping akun lalu konfirmasi. Akun dilepas dari CGDrive (refresh token-nya dihapus dari `data/accounts.json`), sedangkan file yang sudah di-upload tetap ada di Google Drive. Kalau ingin mencabut izinnya sepenuhnya dari sisi Google, buka [myaccount.google.com/permissions](https://myaccount.google.com/permissions).
 
 ## Konfigurasi
 

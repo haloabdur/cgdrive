@@ -106,6 +106,21 @@
   .toast.show { opacity: 1; }
   .toast.err { background: var(--danger); color: #fff; }
 
+  .modal { position: fixed; inset: 0; background: rgba(17,24,39,.45); display: flex; align-items: center; justify-content: center;
+    padding: 16px; z-index: 20; }
+  .modal[hidden] { display: none; }
+  .dialog { width: 100%; max-width: 420px; background: var(--surface); border-radius: 16px; padding: 24px;
+    display: flex; flex-direction: column; gap: 16px; box-shadow: 0 20px 50px rgba(0,0,0,.2); }
+  .dialog h2 { font-size: 17px; }
+  .dialog p { margin: 6px 0 0; color: var(--muted); }
+  .dialog p strong { color: var(--text); word-break: break-all; }
+  .danger-icon { width: 44px; height: 44px; border-radius: 999px; background: #FEE2E2; color: var(--danger-text); display: grid; place-items: center; }
+  .actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+  .btn-ghost { min-height: 44px; padding: 0 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+    font-weight: 500; cursor: pointer; }
+  .btn-danger { background: var(--danger); }
+  .btn-danger:hover { background: var(--danger-text); }
+
   @media (max-width: 640px) {
     header { padding: 0 16px; }
     main { padding: 20px 16px; }
@@ -171,6 +186,22 @@
     </div>
   </section>
 </main>
+
+<div class="modal" id="modal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="danger-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.43"/><path d="M14 11a5 5 0 0 0-7.07 0l-2.83 2.83a5 5 0 0 0 7.07 7.07l1.33-1.33"/><path d="M3 3l18 18"/></svg>
+    </div>
+    <div>
+      <h2 id="modal-title">Putuskan akun ini?</h2>
+      <p><strong id="modal-email"></strong> akan dilepas dari CGDrive. File yang sudah di-upload tetap aman di Google Drive.</p>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn-ghost" id="modal-cancel">Batal</button>
+      <button type="button" class="btn btn-danger" id="modal-ok">Putuskan</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -283,15 +314,42 @@
     renderAccounts();
   }
 
-  async function disconnect(a) {
-    if (!confirm(`Putuskan ${a.email} dari CGDrive? File di Drive tidak dihapus.`)) return;
-    const res = await fetch('/api/accounts/' + encodeURIComponent(a.id), { method: 'DELETE' });
-    if (res.ok) {
+  // Dialog konfirmasi putuskan akun.
+  let pendingRemove = null;
+  let lastFocus = null;
+  function disconnect(a) {
+    pendingRemove = a;
+    lastFocus = document.activeElement;
+    $('modal-email').textContent = a.email;
+    $('modal').hidden = false;
+    $('modal-cancel').focus();
+  }
+  function closeModal() {
+    $('modal').hidden = true;
+    pendingRemove = null;
+    if (lastFocus) lastFocus.focus();
+  }
+  $('modal-cancel').addEventListener('click', closeModal);
+  $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) closeModal(); });
+  $('modal').addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+  $('modal-ok').addEventListener('click', async () => {
+    const a = pendingRemove;
+    if (!a) return;
+    $('modal-ok').disabled = true;
+    try {
+      const res = await fetch('/api/accounts/' + encodeURIComponent(a.id), { method: 'DELETE' });
+      if (!res.ok) throw new Error();
       if (state.picked === a.id) { state.picked = null; state.auto = true; $('auto').checked = true; }
       toast(a.email + ' diputuskan');
+      lastFocus = null;
+      closeModal();
       loadAccounts();
-    } else toast('Gagal memutuskan akun', true);
-  }
+    } catch {
+      toast('Gagal memutuskan akun', true);
+    } finally {
+      $('modal-ok').disabled = false;
+    }
+  });
 
   // ---------- Antrian upload ----------
   function addFiles(files) {
