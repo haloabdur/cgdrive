@@ -60,7 +60,7 @@ CGDrive dikemas sebagai **satu file program** dan halaman web-nya sudah tertanam
 2. Ekstrak, salin `.env.example` menjadi `.env` di folder yang sama, lalu isi Client ID & secret.
 3. Jalankan `cgdrive` (Windows: `cgdrive.exe`) dan buka http://localhost:8080.
 
-Membuat rilis baru: `git tag v0.1.0 && git push origin v0.1.0`. Workflow akan mem-build keempat binary dan melampirkannya ke GitHub Release.
+Membuat rilis baru: `git tag v0.1.0 && git push origin v0.1.0`, atau buka tab *Actions* → **Release** → *Run workflow* dan isi kolom tag. Workflow akan mem-build keempat binary dan melampirkannya ke GitHub Release.
 
 ## Menjalankan dari source
 
